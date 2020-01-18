@@ -3,9 +3,16 @@
 #include <Servo.h>
 
 // Setting variables
-int resistPin1 = 1;
-int resistPin2 = 2;
-int servoPin = 3;
+const int resistorPinR = A0; //SET
+const int resistorPinL = A1; //SET
+const int laserPinL = 9; //SET
+const int laserPinR = 10; //SET
+const int servoPin = 8; //SET
+const int trigPin = 9;
+const int echoPin = 10;
+
+// US Distance Sensors
+float duration, distance;
 
 // Creating Motorshield and Motors and Servo
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -22,6 +29,10 @@ int FLSp = 50, FRSp = 50, BRSp = 50, BLSp = 50;
 const int left = 0;
 const int right = 1;
 
+// Encoders
+int leftCounter, rightCounter;
+int flagL, flagR;
+
 // Blink w/o Delay
 unsigned long previousMillis = 0;
 
@@ -35,22 +46,26 @@ void setup()
   servo.attach(servoPin);
 
   // Encoders
-  pinMode(resistPin1, INPUT);
-  pinMode(resistPin2, INPUT);
+  pinMode(laserPinL, OUTPUT);
+  pinMode(laserPinR, OUTPUT);
+ // pinMode(resistorPinL, INPUT);
+ // pinMode(resistorPinR, INPUT);
+
+  digitalWrite(laserPinL, HIGH);
+  digitalWrite(laserPinR, HIGH);
+
+  // US Distance Sensors
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 }
 
 void loop()
 {
+  readEncoders();
   // put your main code here, to run repeatedly:
-  unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillis >= 1000) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-
-    SpinRight();
-    RunMotors();
-  }
+  //unsigned long currentMillis = millis();
+ // if (currentMillis - previousMillis >= 1000) 
+   
 }
 
 void pointAnt(int angle)
@@ -150,4 +165,47 @@ void RunMotors()
     BL->run(BACKWARD);
   }
   
+}
+
+void readEncoders()
+{
+  if(flagL == 0 && analogRead(resistorPinL) < 600)
+  {
+    Serial.println("Left Blocked!");
+    flagL = 1;
+  }
+  else if (flagL == 1 && analogRead(resistorPinL) > 700)
+  {
+    Serial.println("Left Open!");
+    flagL = 0;
+  }
+
+  if(analogRead(flagR == 0 && resistorPinR) < 600)
+  {
+    Serial.println("Right Blocked!");
+    flagR = 1;
+  }
+  else if (flagR == 1 && analogRead(resistorPinR) > 700)
+  {
+    Serial.println("Right Open!");
+    flagR = 0;
+  }
+}
+
+void triggerDistSensor()
+{
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance= duration*0.034/2;
+  // Prints the distance on the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.println(distance);
 }
