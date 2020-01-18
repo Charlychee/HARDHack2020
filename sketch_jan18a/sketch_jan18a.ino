@@ -1,103 +1,153 @@
 #include <Adafruit_MotorShield.h>
 #include <Wire.h>
+#include <Servo.h>
 
-// Creating Motorshield and Motors
+// Setting variables
+int resistPin1 = 1;
+int resistPin2 = 2;
+int servoPin = 3;
+
+// Creating Motorshield and Motors and Servo
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-Adafruit_DCMotor *Motor1 = AFMS.getMotor(1);
-Adafruit_DCMotor *Motor2 = AFMS.getMotor(2);
-Adafruit_DCMotor *Motor3 = AFMS.getMotor(3);
-Adafruit_DCMotor *Motor4 = AFMS.getMotor(4);
+Adafruit_DCMotor *FL = AFMS.getMotor(1);
+Adafruit_DCMotor *FR = AFMS.getMotor(2);
+Adafruit_DCMotor *BR = AFMS.getMotor(3);
+Adafruit_DCMotor *BL = AFMS.getMotor(4);
+
+Servo servo;
+int servopos = 0;
 
 // Creating defined speeds for motors
-int M1Sp = 50, M2Sp = 50, M3Sp = 50, M4Sp = 50;
+int FLSp = 50, FRSp = 50, BRSp = 50, BLSp = 50;
+const int left = 0;
+const int right = 1;
 
 // Blink w/o Delay
 unsigned long previousMillis = 0;
 
-int flag = 1;
-
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
   Serial.begin(115200); // Set up communications
   AFMS.begin(); // Start motor
+
+  //Servo
+  servo.attach(servoPin);
+
+  // Encoders
+  pinMode(resistPin1, INPUT);
+  pinMode(resistPin2, INPUT);
 }
 
-void loop() {
+void loop()
+{
   // put your main code here, to run repeatedly:
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= 1000) {
     // save the last time you blinked the LED
     previousMillis = currentMillis;
-    if (flag == 1){
-      Forward();
-    }
-    else {
-      Backwards();
-    }
+
+    SpinRight();
     RunMotors();
-    /*Backwards();
-    RunMotors();
-    */
   }
+}
+
+void pointAnt(int angle)
+{
+  servo.write(angle);
+}
+
+void Circle(int direction)
+{
+  if (direction == left)
+  {
+    FLSp = 40;
+    FRSp = 75;
+    BRSp = 75;
+    BLSp = 40;
+  }
+
+  if (direction == right)
+  {
+    FLSp = 75;
+    FRSp = 40;
+    BRSp = 40;
+    BLSp = 75;
+  }
+}
+void SpinRight()
+{
+  FLSp = 50;
+  FRSp = -50; 
+  BRSp = -50; 
+  BLSp = 50; 
+}
+
+void SpinLeft()
+{
+  FLSp = -50;
+  FRSp = 50;
+  BRSp = 50;
+  BLSp = -50;
 }
 
 void Forward()
 {
-  M1Sp = 50;
-  M2Sp = 50;
-  M3Sp = 50;
-  M4Sp = 50;
+  FLSp = 50;
+  FRSp = 50;
+  BRSp = 50;
+  BLSp = 50;
   flag = 0;
 }
 
 void Backwards()
 {
-  M1Sp = -50;
-  M2Sp = -50;
-  M3Sp = -50;
-  M4Sp = -50;
+  FLSp = -50;
+  FRSp = -50;
+  BRSp = -50;
+  BLSp = -50;
   flag = 1;
 }
 
 void RunMotors()
 {
-  Motor1->setSpeed(abs(M1Sp));
-  Motor2->setSpeed(abs(M2Sp));
-  Motor3->setSpeed(abs(M3Sp));
-  Motor4->setSpeed(abs(M4Sp));
+  FL->setSpeed(abs(FLSp));
+  FR->setSpeed(abs(FRSp));
+  BR->setSpeed(abs(BRSp));
+  BL->setSpeed(abs(BLSp));
 
-  if (M1Sp > 0)
+  if (FLSp > 0)
   {
-    Motor1->run(FORWARD);
+    FL->run(FORWARD);
   }
   else
   {
-    Motor1->run(BACKWARD);
+    FL->run(BACKWARD);
   }
-  if (M2Sp > 0)
+  if (FRSp > 0)
   {
-    Motor2->run(FORWARD);
-  }
-  else
-  {
-    Motor2->run(BACKWARD);
-  }
-  if (M3Sp > 0)
-  {
-    Motor3->run(FORWARD);
+    FR->run(FORWARD);
   }
   else
   {
-    Motor3->run(BACKWARD);
+    FR->run(BACKWARD);
   }
-  if (M4Sp > 0)
+  if (BRSp > 0)
   {
-    Motor4->run(FORWARD);
+    BR->run(FORWARD);
   }
   else
   {
-    Motor4->run(BACKWARD);
+    BR->run(BACKWARD);
+  }
+  if (BLSp > 0)
+  {
+    BL->run(FORWARD);
+  }
+  else
+  {
+    BL->run(BACKWARD);
   }
   
 }
