@@ -1,0 +1,4 @@
+
+float getGroundHeading();
+
+void initGyroSensor();
